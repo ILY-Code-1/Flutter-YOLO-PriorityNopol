@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_sizes.dart';
 import '../theme/app_text_styles.dart';
 
 class HowItWorksRow extends StatelessWidget {
@@ -18,15 +19,15 @@ class HowItWorksRow extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Container(
-          width: 36,
-          height: 36,
+          width: AppSizes.iconBgSmall,
+          height: AppSizes.iconBgSmall,
           decoration: BoxDecoration(
             color: AppColors.accentOrange,
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(AppSizes.radiusS),
           ),
           child: Icon(icon, color: Colors.white, size: 18),
         ),
-        const SizedBox(width: 16),
+        SizedBox(width: AppSizes.spaceM),
         Expanded(
           child: Text(text, style: AppTextStyles.body),
         ),

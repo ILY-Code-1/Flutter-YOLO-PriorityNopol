@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_sizes.dart';
 import '../theme/app_text_styles.dart';
 import '../../data/models/detection_record.dart';
 
@@ -18,10 +19,13 @@ class DetectionCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        padding: EdgeInsets.symmetric(
+          horizontal: AppSizes.paddingPage * 0.7,
+          vertical: 12,
+        ),
         decoration: BoxDecoration(
           color: AppColors.cardWhite,
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(AppSizes.radiusCard),
           boxShadow: const [
             BoxShadow(
               color: Colors.black12,
@@ -33,11 +37,11 @@ class DetectionCard extends StatelessWidget {
         child: Row(
           children: [
             Container(
-              width: 48,
-              height: 48,
+              width: AppSizes.iconBgMedium,
+              height: AppSizes.iconBgMedium,
               decoration: BoxDecoration(
                 color: AppColors.iconBgPurple,
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(AppSizes.radiusS),
               ),
               child: const Icon(
                 Icons.image_rounded,
@@ -45,7 +49,7 @@ class DetectionCard extends StatelessWidget {
                 size: 24,
               ),
             ),
-            const SizedBox(width: 14),
+            SizedBox(width: AppSizes.spaceL),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,

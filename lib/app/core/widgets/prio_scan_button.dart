@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../theme/app_sizes.dart';
 import '../theme/app_text_styles.dart';
 
 class PrioScanButton extends StatelessWidget {
@@ -17,13 +18,13 @@ class PrioScanButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox(
       width: double.infinity,
-      height: 54,
+      height: AppSizes.buttonHeight,
       child: Material(
         color: color,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(AppSizes.radiusCard),
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(AppSizes.radiusCard),
           child: Center(
             child: Text(label, style: AppTextStyles.buttonText),
           ),

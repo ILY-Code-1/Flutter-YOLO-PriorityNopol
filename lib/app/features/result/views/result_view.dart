@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../core/theme/app_sizes.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/gradient_background.dart';
 import '../../../core/widgets/image_preview_box.dart';
@@ -18,16 +19,16 @@ class ResultView extends GetView<ResultController> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Top bar
               Padding(
-                padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+                padding: EdgeInsets.fromLTRB(
+                    AppSizes.paddingPage, AppSizes.spaceM, AppSizes.paddingPage, 0),
                 child: Align(
                   alignment: Alignment.centerLeft,
                   child: KembaliButton(onTap: controller.goToHistory),
                 ),
               ),
 
-              const SizedBox(height: 12),
+              SizedBox(height: AppSizes.spaceS),
 
               const Text(
                 'Hasil Deteksi',
@@ -35,11 +36,10 @@ class ResultView extends GetView<ResultController> {
                 style: AppTextStyles.title,
               ),
 
-              const SizedBox(height: 20),
+              SizedBox(height: AppSizes.spaceL),
 
-              // Image preview
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
+                padding: EdgeInsets.symmetric(horizontal: AppSizes.paddingPage),
                 child: Obx(
                   () => ImagePreviewBox(
                     imagePath: controller.record.value?.imagePath ?? '',
@@ -47,30 +47,20 @@ class ResultView extends GetView<ResultController> {
                 ),
               ),
 
-              const SizedBox(height: 24),
+              SizedBox(height: AppSizes.spaceL),
 
-              // Info fields
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
+                padding: EdgeInsets.symmetric(horizontal: AppSizes.paddingPage),
                 child: Obx(() {
                   final r = controller.record.value;
                   if (r == null) return const SizedBox.shrink();
                   return Column(
                     children: [
-                      InfoField(
-                        label: 'Jenis Kendaraan:',
-                        value: r.vehicleType,
-                      ),
-                      const SizedBox(height: 16),
-                      InfoField(
-                        label: 'Nomor Polisi:',
-                        value: r.plateNumber,
-                      ),
-                      const SizedBox(height: 16),
-                      InfoField(
-                        label: 'Tanggal Dibuat',
-                        value: r.formattedDate,
-                      ),
+                      InfoField(label: 'Jenis Kendaraan:', value: r.vehicleType),
+                      SizedBox(height: AppSizes.spaceL),
+                      InfoField(label: 'Nomor Polisi:', value: r.plateNumber),
+                      SizedBox(height: AppSizes.spaceL),
+                      InfoField(label: 'Tanggal Dibuat', value: r.formattedDate),
                     ],
                   );
                 }),

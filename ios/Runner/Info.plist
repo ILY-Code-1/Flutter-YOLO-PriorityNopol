@@ -22,6 +22,10 @@
 	<string>????</string>
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Diperlukan untuk mendeteksi kendaraan prioritas</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Diperlukan untuk memilih gambar kendaraan dari galeri</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>
