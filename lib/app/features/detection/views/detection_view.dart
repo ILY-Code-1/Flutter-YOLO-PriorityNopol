@@ -6,7 +6,6 @@ import '../../../core/theme/app_sizes.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/gradient_background.dart';
 import '../../../core/widgets/image_preview_box.dart';
-import '../../../core/widgets/kembali_button.dart';
 import '../../../core/widgets/prio_scan_button.dart';
 import '../controllers/detection_controller.dart';
 
@@ -16,43 +15,59 @@ class DetectionView extends GetView<DetectionController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.bgGradientTop,
+      appBar: AppBar(
+        backgroundColor: AppColors.bgGradientTop,
+        elevation: 0,
+        leading: IconButton(
+          onPressed: controller.goBack,
+          icon: const Icon(
+            Icons.chevron_left_rounded,
+            color: Colors.white,
+            size: 28,
+          ),
+        ),
+        title: const Text('Deteksi Kendaraan', style: AppTextStyles.title),
+        centerTitle: true,
+      ),
       body: GradientBackground(
         child: SafeArea(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+          top: false,
+          // Stack memungkinkan overlay loading ditumpuk di atas konten
+          child: Stack(
             children: [
-              Padding(
-                padding: EdgeInsets.fromLTRB(
-                    AppSizes.paddingPage, AppSizes.spaceM, AppSizes.paddingPage, 0),
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: KembaliButton(onTap: controller.goBack),
-                ),
+              // Layer 1 — konten utama
+              Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Padding(
+                    padding:
+                        EdgeInsets.symmetric(horizontal: context.paddingPage),
+                    child: Obx(() => _buildBox()),
+                  ),
+
+                  SizedBox(height: context.spaceXL),
+
+                  Padding(
+                    padding:
+                        EdgeInsets.symmetric(horizontal: context.paddingPage),
+                    child: Obx(() => _buildButtons(context)),
+                  ),
+                ],
               ),
 
-              SizedBox(height: AppSizes.spaceS),
-
-              const Text(
-                'Deteksi Kendaraan',
-                textAlign: TextAlign.center,
-                style: AppTextStyles.title,
-              ),
-
-              SizedBox(height: AppSizes.spaceL),
-
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: AppSizes.paddingPage),
-                child: Obx(() => _buildBox()),
-              ),
-
-              SizedBox(height: AppSizes.spaceXL),
-
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: AppSizes.paddingPage),
-                child: Obx(() => _buildButtons()),
-              ),
-
-              const Spacer(),
+              // Layer 2 — overlay loading, hanya muncul saat isLoading = true
+              Obx(() => controller.isLoading.value
+                  ? Container(
+                      color: Colors.black54,
+                      child: const Center(
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 3,
+                        ),
+                      ),
+                    )
+                  : const SizedBox.shrink()),
             ],
           ),
         ),
@@ -70,7 +85,7 @@ class DetectionView extends GetView<DetectionController> {
     return _LoadingBox();
   }
 
-  Widget _buildButtons() {
+  Widget _buildButtons(BuildContext context) {
     if (controller.isCaptured.value) {
       return Column(
         children: [
@@ -79,7 +94,7 @@ class DetectionView extends GetView<DetectionController> {
             onTap: controller.retake,
             color: AppColors.accentOrange,
           ),
-          SizedBox(height: AppSizes.spaceS),
+          SizedBox(height: context.spaceS),
           PrioScanButton(
             label: 'SUBMIT',
             onTap: controller.submit,
@@ -97,7 +112,7 @@ class DetectionView extends GetView<DetectionController> {
           label: 'Ambil\nGambar',
           onTap: controller.capture,
         ),
-        SizedBox(width: AppSizes.spaceXXL * 1.2),
+        SizedBox(width: context.spaceXXL * 1.2),
         _ActionButton(
           icon: Icons.upload_rounded,
           label: 'Upload\nGambar',
@@ -119,7 +134,7 @@ class _CameraBox extends StatelessWidget {
       borderRadius: BorderRadius.circular(AppSizes.radiusXL),
       child: SizedBox(
         width: double.infinity,
-        height: AppSizes.imageBoxHeight,
+        height: context.imageBoxHeight,
         child: FittedBox(
           fit: BoxFit.cover,
           clipBehavior: Clip.hardEdge,
@@ -139,7 +154,7 @@ class _LoadingBox extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      height: AppSizes.imageBoxHeight,
+      height: context.imageBoxHeight,
       decoration: BoxDecoration(
         color: AppColors.cardWhite,
         borderRadius: BorderRadius.circular(AppSizes.radiusXL),
@@ -188,7 +203,7 @@ class _ActionButton extends StatelessWidget {
             ),
             child: Icon(icon, color: Colors.white, size: 28),
           ),
-          SizedBox(height: AppSizes.spaceXS),
+          SizedBox(height: context.spaceXS),
           Text(
             label,
             textAlign: TextAlign.center,

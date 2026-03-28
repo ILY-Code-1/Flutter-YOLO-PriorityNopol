@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_sizes.dart';
@@ -20,7 +21,7 @@ class DetectionCard extends StatelessWidget {
       onTap: onTap,
       child: Container(
         padding: EdgeInsets.symmetric(
-          horizontal: AppSizes.paddingPage * 0.7,
+          horizontal: context.paddingPage * 0.7,
           vertical: 12,
         ),
         decoration: BoxDecoration(
@@ -36,20 +37,18 @@ class DetectionCard extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Container(
-              width: AppSizes.iconBgMedium,
-              height: AppSizes.iconBgMedium,
-              decoration: BoxDecoration(
-                color: AppColors.iconBgPurple,
-                borderRadius: BorderRadius.circular(AppSizes.radiusS),
-              ),
-              child: const Icon(
-                Icons.image_rounded,
-                color: Colors.white,
-                size: 24,
+            // Thumbnail kendaraan — asset, file lokal, atau fallback icon
+            ClipRRect(
+              borderRadius: BorderRadius.circular(AppSizes.radiusS),
+              child: SizedBox(
+                width: AppSizes.iconBgMedium,
+                height: AppSizes.iconBgMedium,
+                child: _buildThumbnail(record.imagePath),
               ),
             ),
-            SizedBox(width: AppSizes.spaceL),
+
+            SizedBox(width: context.spaceL),
+
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -61,6 +60,7 @@ class DetectionCard extends StatelessWidget {
                 ],
               ),
             ),
+
             const Icon(
               Icons.chevron_right_rounded,
               color: AppColors.textMuted,
@@ -70,5 +70,23 @@ class DetectionCard extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Widget _buildThumbnail(String path) {
+    // Path kosong → fallback icon ungu
+    if (path.isEmpty) {
+      return Container(
+        color: AppColors.iconBgPurple,
+        child: const Icon(Icons.image_rounded, color: Colors.white, size: 24),
+      );
+    }
+
+    // Path asset (assets/images/...) → Image.asset
+    if (path.startsWith('assets/')) {
+      return Image.asset(path, fit: BoxFit.cover);
+    }
+
+    // Path file lokal (hasil kamera/galeri) → Image.file
+    return Image.file(File(path), fit: BoxFit.cover);
   }
 }

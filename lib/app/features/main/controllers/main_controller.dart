@@ -10,6 +10,29 @@ class MainController extends GetxController {
 
   final RxList<DetectionRecord> records = <DetectionRecord>[].obs;
 
+  // Kategori yang sedang dipilih; 'Semua' berarti tidak ada filter
+  final RxString selectedCategory = 'Semua'.obs;
+
+  static const List<String> categories = [
+    'Semua',
+    'Ambulance',
+    'Police',
+    'Fire Truck',
+  ];
+
+  // Getter reaktif — otomatis dihitung ulang tiap kali records atau
+  // selectedCategory berubah (karena keduanya adalah Rx)
+  List<DetectionRecord> get filteredRecords {
+    if (selectedCategory.value == 'Semua') return records;
+    return records
+        .where((r) => r.vehicleType == selectedCategory.value)
+        .toList();
+  }
+
+  void setCategory(String? value) {
+    if (value != null) selectedCategory.value = value;
+  }
+
   @override
   void onInit() {
     super.onInit();
@@ -66,7 +89,7 @@ class MainController extends GetxController {
         id: '1',
         vehicleType: 'Ambulance',
         plateNumber: 'B 1234 XYZ',
-        imagePath: '',
+        imagePath: 'assets/images/ambulance.webp',
         detectedAt: DateTime.now(),
         confidence: 0.94,
       ),
@@ -74,7 +97,7 @@ class MainController extends GetxController {
         id: '2',
         vehicleType: 'Police',
         plateNumber: 'B 5678 ABC',
-        imagePath: '',
+        imagePath: 'assets/images/police.webp',
         detectedAt: DateTime.now(),
         confidence: 0.91,
       ),
@@ -82,7 +105,7 @@ class MainController extends GetxController {
         id: '3',
         vehicleType: 'Fire Truck',
         plateNumber: 'D 9999 ZZ',
-        imagePath: '',
+        imagePath: 'assets/images/fireman.webp',
         detectedAt: DateTime.now(),
         confidence: 0.88,
       ),

@@ -14,7 +14,7 @@ class ImagePreviewBox extends StatelessWidget {
       borderRadius: BorderRadius.circular(AppSizes.radiusXL),
       child: Container(
         width: double.infinity,
-        height: AppSizes.imageBoxHeight,
+        height: context.imageBoxHeight,
         decoration: BoxDecoration(
           color: AppColors.cardWhite,
           borderRadius: BorderRadius.circular(AppSizes.radiusXL),

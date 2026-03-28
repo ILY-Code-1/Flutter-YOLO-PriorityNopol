@@ -17,6 +17,9 @@ class DetectionController extends GetxController {
   // path foto hasil capture atau upload galeri
   final RxString capturedImagePath = ''.obs;
 
+  // true = sedang proses submit, tampilkan overlay loading
+  final RxBool isLoading = false.obs;
+
   @override
   void onInit() {
     super.onInit();
@@ -70,17 +73,27 @@ class DetectionController extends GetxController {
     isCaptured.value = false;
   }
 
-  // Kirim ke ResultView langsung — PreviewView sudah tidak ada
-  void submit() {
-    // TODO: ganti dengan hasil nyata dari API deteksi YOLOv8
+  // Kirim ke ResultView — dengan loading overlay sebelum navigasi
+  Future<void> submit() async {
+    isLoading.value = true;
+
+    // TODO: ganti delay dengan pemanggilan API deteksi YOLOv8 yang nyata
+    await Future.delayed(const Duration(seconds: 2));
+
+    final path = capturedImagePath.value.isNotEmpty
+        ? capturedImagePath.value
+        : 'assets/images/ambulance.webp';
+
     final result = DetectionRecord(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
       vehicleType: 'Ambulance',
       plateNumber: 'B 1234 XYZ',
-      imagePath: capturedImagePath.value,
+      imagePath: path,
       detectedAt: DateTime.now(),
       confidence: 0.94,
     );
+
+    isLoading.value = false;
     Get.toNamed(AppRoutes.result, arguments: result);
   }
 

@@ -27,7 +27,7 @@ class HowItWorksRow extends StatelessWidget {
           ),
           child: Icon(icon, color: Colors.white, size: 18),
         ),
-        SizedBox(width: AppSizes.spaceM),
+        SizedBox(width: context.spaceM),
         Expanded(
           child: Text(text, style: AppTextStyles.body),
         ),

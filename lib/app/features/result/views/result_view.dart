@@ -13,6 +13,7 @@ class ResultView extends GetView<ResultController> {
 
   @override
   Widget build(BuildContext context) {
+    final path = 'assets/images/ambulance.webp';
     return Scaffold(
       body: GradientBackground(
         child: SafeArea(
@@ -21,14 +22,18 @@ class ResultView extends GetView<ResultController> {
             children: [
               Padding(
                 padding: EdgeInsets.fromLTRB(
-                    AppSizes.paddingPage, AppSizes.spaceM, AppSizes.paddingPage, 0),
+                  context.paddingPage,
+                  context.spaceM,
+                  context.paddingPage,
+                  0,
+                ),
                 child: Align(
                   alignment: Alignment.centerLeft,
                   child: KembaliButton(onTap: controller.goToHistory),
                 ),
               ),
 
-              SizedBox(height: AppSizes.spaceS),
+              SizedBox(height: context.spaceS),
 
               const Text(
                 'Hasil Deteksi',
@@ -36,31 +41,37 @@ class ResultView extends GetView<ResultController> {
                 style: AppTextStyles.title,
               ),
 
-              SizedBox(height: AppSizes.spaceL),
+              SizedBox(height: context.spaceL),
 
               Padding(
-                padding: EdgeInsets.symmetric(horizontal: AppSizes.paddingPage),
+                padding: EdgeInsets.symmetric(horizontal: context.paddingPage),
                 child: Obx(
                   () => ImagePreviewBox(
-                    imagePath: controller.record.value?.imagePath ?? '',
+                    imagePath: controller.record.value?.imagePath ?? path,
                   ),
                 ),
               ),
 
-              SizedBox(height: AppSizes.spaceL),
+              SizedBox(height: context.spaceL),
 
               Padding(
-                padding: EdgeInsets.symmetric(horizontal: AppSizes.paddingPage),
+                padding: EdgeInsets.symmetric(horizontal: context.paddingPage),
                 child: Obx(() {
                   final r = controller.record.value;
                   if (r == null) return const SizedBox.shrink();
                   return Column(
                     children: [
-                      InfoField(label: 'Jenis Kendaraan:', value: r.vehicleType),
-                      SizedBox(height: AppSizes.spaceL),
+                      InfoField(
+                        label: 'Jenis Kendaraan:',
+                        value: r.vehicleType,
+                      ),
+                      SizedBox(height: context.spaceL),
                       InfoField(label: 'Nomor Polisi:', value: r.plateNumber),
-                      SizedBox(height: AppSizes.spaceL),
-                      InfoField(label: 'Tanggal Dibuat', value: r.formattedDate),
+                      SizedBox(height: context.spaceL),
+                      InfoField(
+                        label: 'Tanggal Dibuat',
+                        value: r.formattedDate,
+                      ),
                     ],
                   );
                 }),
