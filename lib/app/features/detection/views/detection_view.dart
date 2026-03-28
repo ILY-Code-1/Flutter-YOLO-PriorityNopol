@@ -77,7 +77,7 @@ class DetectionView extends GetView<DetectionController> {
 
   Widget _buildBox() {
     if (controller.isCaptured.value) {
-      return ImagePreviewBox(imagePath: controller.capturedImagePath.value);
+      return ImagePreviewBox(imageData: controller.capturedImagePath.value);
     }
     if (controller.isCameraReady.value) {
       return _CameraBox(cameraController: controller.cameraController!);

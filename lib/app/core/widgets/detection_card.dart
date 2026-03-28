@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_sizes.dart';
@@ -43,7 +42,7 @@ class DetectionCard extends StatelessWidget {
               child: SizedBox(
                 width: AppSizes.iconBgMedium,
                 height: AppSizes.iconBgMedium,
-                child: _buildThumbnail(record.imagePath),
+                child: _buildThumbnail(record.vehicleType),
               ),
             ),
 
@@ -72,21 +71,26 @@ class DetectionCard extends StatelessWidget {
     );
   }
 
-  Widget _buildThumbnail(String path) {
-    // Path kosong → fallback icon ungu
-    if (path.isEmpty) {
-      return Container(
-        color: AppColors.iconBgPurple,
-        child: const Icon(Icons.image_rounded, color: Colors.white, size: 24),
-      );
-    }
+  // Mapping vehicleType → asset thumbnail yang selalu tersedia,
+  // sehingga thumbnail tetap muncul meskipun imagePath adalah
+  // path lokal yang sudah tidak bisa diakses (misal: setelah data
+  // diambil dari Firestore di session berbeda).
+  static const _thumbnailAssets = {
+    'Ambulance': 'assets/images/ambulance.webp',
+    'Police': 'assets/images/police.webp',
+    'Fire Truck': 'assets/images/fireman.webp',
+  };
 
-    // Path asset (assets/images/...) → Image.asset
-    if (path.startsWith('assets/')) {
-      return Image.asset(path, fit: BoxFit.cover);
+  Widget _buildThumbnail(String vehicleType) {
+    final asset = _thumbnailAssets[vehicleType];
+    if (asset != null) {
+      return Image.asset(asset, fit: BoxFit.cover);
     }
-
-    // Path file lokal (hasil kamera/galeri) → Image.file
-    return Image.file(File(path), fit: BoxFit.cover);
+    // vehicleType tidak dikenali → fallback icon ungu
+    return Container(
+      color: AppColors.iconBgPurple,
+      child: const Icon(Icons.directions_car_rounded,
+          color: Colors.white, size: 24),
+    );
   }
 }
