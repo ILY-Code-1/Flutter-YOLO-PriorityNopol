@@ -32,6 +32,12 @@ class DetectionController extends GetxController {
       'https://yusnar.my.id/py-yolo-nopol/api/v1/detect';
 
   static const _allowedVehicles = {'ambulance', 'police', 'fire_truck'};
+  
+  final vehicleMap = {
+    'ambulance': 'Ambulance',
+    'police': 'Police',
+    'fire_truck': 'Fire Truck',
+  };
 
   @override
   void onInit() {
@@ -90,7 +96,7 @@ class DetectionController extends GetxController {
   String _formatPlateNumber(String raw) {
     final match =
         RegExp(r'^([A-Za-z]+)(\d+)([A-Za-z]+)$').firstMatch(raw.trim());
-    if (match == null) return raw; // return as-is if pattern doesn't match
+    if (match == null) return "-"; // return as-is if pattern doesn't match
     return '${match.group(1)} ${match.group(2)} ${match.group(3)}';
   }
 
@@ -141,11 +147,10 @@ class DetectionController extends GetxController {
         isLoading.value = false;
         Get.snackbar(
           'Gagal',
-          'Kendaraan tidak terdeteksi',
+          'Plat Nomor Kendaraan tidak terdeteksi',
           snackPosition: SnackPosition.BOTTOM,
         );
-        Get.offAllNamed(AppRoutes.detection);
-        isCaptured.value = false;
+        retake();
         return;
       }
 
@@ -174,7 +179,7 @@ class DetectionController extends GetxController {
 
       final result = DetectionRecord(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
-        vehicleType: vehicle,
+        vehicleType: vehicleMap[vehicle] ?? 'Unknown',
         plateNumber: formattedPlate,
         imageData: imageData,
         detectedAt: DateTime.now(),
