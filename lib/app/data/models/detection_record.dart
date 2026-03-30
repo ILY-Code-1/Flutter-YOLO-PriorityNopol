@@ -27,9 +27,11 @@ class DetectionRecord {
   bool get isAsset => imageData.startsWith('assets/');
 
   String get formattedDate {
-    return '${detectedAt.day.toString().padLeft(2, '0')} - '
-        '${detectedAt.month.toString().padLeft(2, '0')} - '
-        '${detectedAt.year}';
+    const months = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+    ];
+    return '${detectedAt.day} ${months[detectedAt.month - 1]} ${detectedAt.year}';
   }
 
   Map<String, dynamic> toMap() => {
