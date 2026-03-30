@@ -8,6 +8,7 @@ import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import '../../../../app_routes.dart';
 import '../../../data/models/detection_record.dart';
+import 'package:http_parser/http_parser.dart';
 
 class DetectionController extends GetxController {
   // CameraController dari package camera — bukan GetX, harus di-dispose manual
@@ -102,8 +103,23 @@ class DetectionController extends GetxController {
     try {
       // --- Multipart POST ---
       final request = http.MultipartRequest('POST', Uri.parse(_apiUrl));
+
+      final String path = capturedImagePath.value.toLowerCase();
+      MediaType mediaType;
+      if (path.endsWith('.png')) {
+        mediaType = MediaType('image', 'png');
+      } else if (path.endsWith('.jpg') || path.endsWith('.jpeg')) {
+        mediaType = MediaType('image', 'jpeg');
+      } else {
+        mediaType = MediaType('image', 'jpeg');
+      }
+
       request.files.add(
-        await http.MultipartFile.fromPath('file', capturedImagePath.value),
+        await http.MultipartFile.fromPath(
+          'file',
+          capturedImagePath.value,
+          contentType: mediaType,
+        ),
       );
 
       final streamedResponse = await request.send().timeout(
