@@ -2,7 +2,7 @@ name: flutter_vehicle_detection_yolov8
 description: "PrioScan — Priority Vehicle Scanner using YOLOv8"
 publish_to: 'none'
 
-version: 1.0.2
+version: 1.0.3
 
 environment:
   sdk: ^3.10.8

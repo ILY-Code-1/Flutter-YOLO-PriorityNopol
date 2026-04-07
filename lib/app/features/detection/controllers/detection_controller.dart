@@ -31,7 +31,7 @@ class DetectionController extends GetxController {
   static const _apiUrl =
       'https://yusnar.my.id/py-yolo-nopol/api/v1/detect';
 
-  static const _allowedVehicles = {'ambulance', 'police', 'fire_truck'};
+  // static const _allowedVehicles = {'ambulance', 'police', 'fire_truck'};
   
   final vehicleMap = {
     'ambulance': 'Ambulance',
@@ -139,44 +139,46 @@ class DetectionController extends GetxController {
         );
       }
 
+      // get response
       final Map<String, dynamic> json = jsonDecode(responseBody);
-      final bool plateDetected = json['plate_detected'] as bool? ?? false;
 
-      // --- Case 1: Not detected ---
-      if (!plateDetected) {
-        isLoading.value = false;
-        Get.snackbar(
-          'Gagal',
-          'Plat Nomor Kendaraan tidak terdeteksi',
-          snackPosition: SnackPosition.BOTTOM,
-        );
-        retake();
-        return;
-      }
+      // build imageData as base64
+      final bytes = await File(capturedImagePath.value).readAsBytes();
+      final String imageData = 'data:image/jpeg;base64,${base64Encode(bytes)}';
 
-      // --- Case 2: Detected ---
-      final String vehicle =
-          (json['vehicle'] as String? ?? '').toLowerCase();
-      if (!_allowedVehicles.contains(vehicle)) {
-        isLoading.value = false;
-        Get.snackbar(
-          'Gagal',
-          'Tipe kendaraan tidak dikenali: $vehicle',
-          snackPosition: SnackPosition.BOTTOM,
-        );
-        return;
-      }
+      // detect vehicle
+      final String vehicle = (json['vehicle'] as String? ?? '').toLowerCase();
+      // if (!_allowedVehicles.contains(vehicle)) {
+      //   isLoading.value = false;
+      //   Get.snackbar(
+      //     'Gagal',
+      //     'Tipe Kendaraan tidak dikenali',
+      //     snackPosition: SnackPosition.BOTTOM,
+      //   );
+      //   return;
+      // }
 
+      // get confidence
+      final double confidence = (json['confidence'] as num? ?? 0).toDouble();
+
+      // get plate detected
+      // final bool plateDetected = json['plate_detected'] as bool? ?? false;
+      // if (!plateDetected) {
+      //   isLoading.value = false;
+      //   Get.snackbar(
+      //     'Gagal',
+      //     'Plat Nomor Kendaraan tidak terdeteksi',
+      //     snackPosition: SnackPosition.BOTTOM,
+      //   );
+      //   retake();
+      //   return;
+      // }
+
+      // get plate number
       final String rawPlate = json['plate_number'] as String? ?? '';
       final String formattedPlate = _formatPlateNumber(rawPlate);
-      final double confidence =
-          (json['confidence'] as num? ?? 0).toDouble();
 
-      // Build imageData as base64
-      final bytes = await File(capturedImagePath.value).readAsBytes();
-      final String imageData =
-          'data:image/jpeg;base64,${base64Encode(bytes)}';
-
+      // recap & save data
       final result = DetectionRecord(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
         vehicleType: vehicleMap[vehicle] ?? 'Unknown',
