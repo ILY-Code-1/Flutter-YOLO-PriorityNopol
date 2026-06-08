@@ -94,10 +94,17 @@ class DetectionController extends GetxController {
   /// Format raw plate number: "B1234XYZ" → "B 1234 XYZ"
   /// Splits into: leading letters · digits · trailing letters
   String _formatPlateNumber(String raw) {
-    final match =
-        RegExp(r'^([A-Za-z]+)(\d+)([A-Za-z]+)$').firstMatch(raw.trim());
-    if (match == null) return "-"; // return as-is if pattern doesn't match
-    return '${match.group(1)} ${match.group(2)} ${match.group(3)}';
+    // Coba format standar: huruf-angka-huruf
+    final match = RegExp(r'^([A-Za-z]+)(\d+)([A-Za-z]*)$').firstMatch(raw.trim());
+    if (match != null) {
+        final suffix = match.group(3) ?? '';
+        if (suffix.isEmpty) {
+            return '${match.group(1)} ${match.group(2)}';
+        }
+        return '${match.group(1)} ${match.group(2)} ${match.group(3)}';
+    }
+    // Fallback: tampilkan apa adanya
+    return raw.trim().isEmpty ? '-' : raw.trim();
   }
 
   // Kirim ke API deteksi YOLOv8, simpan ke Firestore, navigasi ke ResultView
