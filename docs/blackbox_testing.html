@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Black Box Testing — PrioScan</title>
+<style>
+  body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 32px; color: #1f2430; background: #f4f6fb; line-height: 1.55; }
+  h1 { color: #4a2fbd; border-bottom: 3px solid #4a2fbd; padding-bottom: 8px; }
+  p.lead { color: #555; }
+  table { border-collapse: collapse; width: 100%; margin-top: 16px; font-size: 13px; }
+  th, td { border: 1px solid #d9def0; padding: 8px 10px; text-align: left; vertical-align: top; }
+  th { background: #4a2fbd; color: #fff; }
+  tr:nth-child(even) td { background: #f7f8fe; }
+  .pass { color: #1b8a3a; font-weight: 700; }
+  .fail { color: #c0392b; font-weight: 700; }
+  .uc { background:#ece7ff; }
+</style>
+</head>
+<body>
+<h1>Black Box Testing — PrioScan</h1>
+<p class="lead">Pengujian fungsional berbasis skenario untuk seluruh fitur PrioScan. Setiap use case diuji minimal dengan satu skenario sukses dan satu skenario gagal.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>No</th><th>Deskripsi Pengujian</th><th>Langkah Uji</th><th>Data Uji</th>
+      <th>Hasil yang Diharapkan</th><th>Hasil Pengujian</th><th>Status</th><th>Keterangan</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr class="uc"><td colspan="8"><strong>UC1 — Melihat Informasi Aplikasi</strong></td></tr>
+    <tr>
+      <td>1</td><td>Menampilkan beranda & cara kerja aplikasi</td>
+      <td>1. Buka aplikasi PrioScan</td>
+      <td>—</td>
+      <td>Tampil judul "Priority Vehicle Detection", logo, deskripsi, dan 3 langkah "Cara Kerja"</td>
+      <td>Beranda tampil lengkap sesuai harapan</td>
+      <td class="pass">PASS</td><td>Skenario sukses</td>
+    </tr>
+    <tr>
+      <td>2</td><td>Navigasi geser ke Riwayat dari beranda</td>
+      <td>1. Buka aplikasi<br>2. Tekan panah ke bawah</td>
+      <td>—</td>
+      <td>Berpindah ke halaman Riwayat Deteksi</td>
+      <td>Halaman riwayat tampil</td>
+      <td class="pass">PASS</td><td>Navigasi antar halaman</td>
+    </tr>
+
+    <tr class="uc"><td colspan="8"><strong>UC2 — Mengambil Gambar Kendaraan</strong></td></tr>
+    <tr>
+      <td>3</td><td>Mengambil gambar via kamera</td>
+      <td>1. Tekan GET STARTED<br>2. Arahkan kamera<br>3. Tekan "Ambil Gambar"</td>
+      <td>Kamera aktif, objek ambulans di layar</td>
+      <td>Foto ter-capture & tampil pada kotak pratinjau, muncul tombol Ambil Ulang & SUBMIT</td>
+      <td>Foto tampil pada pratinjau</td>
+      <td class="pass">PASS</td><td>Skenario sukses</td>
+    </tr>
+    <tr>
+      <td>4</td><td>Kamera tidak tersedia (emulator/izin ditolak)</td>
+      <td>1. Tekan GET STARTED pada perangkat tanpa kamera/izin</td>
+      <td>Izin kamera ditolak</td>
+      <td>Kotak gambar kosong ditampilkan, aplikasi tidak crash</td>
+      <td>Kotak loading/kosong tampil, app stabil</td>
+      <td class="pass">PASS</td><td>Skenario gagal (graceful)</td>
+    </tr>
+
+    <tr class="uc"><td colspan="8"><strong>UC3 — Mengunggah Gambar Kendaraan</strong></td></tr>
+    <tr>
+      <td>5</td><td>Mengunggah gambar dari galeri</td>
+      <td>1. Buka Deteksi<br>2. Tekan "Upload Gambar"<br>3. Pilih foto</td>
+      <td>File foto_police.jpg</td>
+      <td>Gambar tampil pada pratinjau, siap di-submit</td>
+      <td>Gambar terpilih tampil</td>
+      <td class="pass">PASS</td><td>Skenario sukses</td>
+    </tr>
+    <tr>
+      <td>6</td><td>Membatalkan pemilihan gambar</td>
+      <td>1. Tekan "Upload Gambar"<br>2. Tekan kembali tanpa memilih</td>
+      <td>—</td>
+      <td>Kembali ke pratinjau kamera, tidak ada gambar terpilih</td>
+      <td>Tetap di pratinjau kamera</td>
+      <td class="pass">PASS</td><td>Skenario gagal/batal</td>
+    </tr>
+
+    <tr class="uc"><td colspan="8"><strong>UC4 — Mendeteksi Kendaraan & Plat Nomor</strong></td></tr>
+    <tr>
+      <td>7</td><td>Deteksi berhasil & tersimpan</td>
+      <td>1. Ambil/upload gambar<br>2. Tekan SUBMIT</td>
+      <td>Gambar ambulans plat "B1234XYZ", koneksi internet aktif</td>
+      <td>Indikator loading muncul, lalu pindah ke Hasil Deteksi: jenis "Ambulance", plat "B 1234 XYZ", confidence; data tersimpan di Firestore</td>
+      <td>Hasil tampil & tersimpan</td>
+      <td class="pass">PASS</td><td>Skenario sukses</td>
+    </tr>
+    <tr>
+      <td>8</td><td>Submit saat tidak ada internet</td>
+      <td>1. Matikan internet<br>2. Tekan SUBMIT</td>
+      <td>Gambar valid, koneksi mati</td>
+      <td>Snackbar "Tidak ada koneksi internet", tetap di halaman Deteksi</td>
+      <td>Snackbar error tampil</td>
+      <td class="pass">PASS</td><td>Skenario gagal (SocketException)</td>
+    </tr>
+    <tr>
+      <td>9</td><td>Submit dengan respons API lambat</td>
+      <td>1. Tekan SUBMIT<br>2. API tidak merespons &gt; 30 detik</td>
+      <td>Server lambat</td>
+      <td>Snackbar "Koneksi timeout, coba lagi"</td>
+      <td>Snackbar timeout tampil</td>
+      <td class="pass">PASS</td><td>Skenario gagal (TimeoutException)</td>
+    </tr>
+
+    <tr class="uc"><td colspan="8"><strong>UC5 — Melihat Hasil Deteksi</strong></td></tr>
+    <tr>
+      <td>10</td><td>Menampilkan detail hasil deteksi</td>
+      <td>1. Selesai deteksi / tap kartu riwayat</td>
+      <td>Record confidence 0.93</td>
+      <td>Tampil gambar, jenis kendaraan, nomor polisi, badge "High" 93.0%, tanggal deteksi</td>
+      <td>Detail tampil lengkap</td>
+      <td class="pass">PASS</td><td>Skenario sukses</td>
+    </tr>
+    <tr>
+      <td>11</td><td>Badge confidence rendah</td>
+      <td>1. Buka hasil dengan confidence rendah</td>
+      <td>confidence 0.45</td>
+      <td>Badge "Low" warna merah, persentase 45.0%</td>
+      <td>Badge Low tampil merah</td>
+      <td class="pass">PASS</td><td>Variasi nilai (batas)</td>
+    </tr>
+
+    <tr class="uc"><td colspan="8"><strong>UC6 — Melihat Riwayat Deteksi</strong></td></tr>
+    <tr>
+      <td>12</td><td>Menampilkan riwayat terurut</td>
+      <td>1. Buka halaman Riwayat</td>
+      <td>≥ 2 record tersimpan</td>
+      <td>Daftar kartu deteksi tampil, terbaru di atas</td>
+      <td>Daftar terurut tampil</td>
+      <td class="pass">PASS</td><td>Skenario sukses</td>
+    </tr>
+    <tr>
+      <td>13</td><td>Riwayat kosong</td>
+      <td>1. Buka Riwayat tanpa data</td>
+      <td>Koleksi kosong</td>
+      <td>Pesan "Tidak ada data untuk kategori ini"</td>
+      <td>Pesan kosong tampil</td>
+      <td class="pass">PASS</td><td>Skenario gagal/kosong</td>
+    </tr>
+
+    <tr class="uc"><td colspan="8"><strong>UC7 — Memfilter Riwayat Deteksi</strong></td></tr>
+    <tr>
+      <td>14</td><td>Memfilter berdasarkan kategori</td>
+      <td>1. Buka Riwayat<br>2. Pilih "Police"</td>
+      <td>Ada record Police & Ambulance</td>
+      <td>Hanya kartu berjenis "Police" yang tampil</td>
+      <td>Daftar terfilter Police</td>
+      <td class="pass">PASS</td><td>Skenario sukses</td>
+    </tr>
+    <tr>
+      <td>15</td><td>Filter kategori tanpa data</td>
+      <td>1. Pilih "Fire Truck"</td>
+      <td>Tidak ada record Fire Truck</td>
+      <td>Pesan "Tidak ada data untuk kategori ini"</td>
+      <td>Pesan kosong tampil</td>
+      <td class="pass">PASS</td><td>Skenario gagal/kosong</td>
+    </tr>
+  </tbody>
+</table>
+</body>
+</html>

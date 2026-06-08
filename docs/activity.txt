@@ -1,0 +1,107 @@
+' == Activity: Melihat Informasi Aplikasi ==
+@startuml
+title Melihat Informasi Aplikasi
+(*) --> "Membuka aplikasi PrioScan"
+--> "Menampilkan beranda: judul, logo & deskripsi"
+--> "Membaca bagian 'Cara Kerja'"
+if "Ingin mulai deteksi?" then
+  -->[ya] "Menekan tombol GET STARTED"
+  --> (*)
+else
+  -->[tidak] "Menggeser ke bawah ke Riwayat Deteksi"
+  --> (*)
+endif
+@enduml
+
+' == Activity: Mengambil Gambar Kendaraan ==
+@startuml
+title Mengambil Gambar Kendaraan
+(*) --> "Membuka halaman Deteksi Kendaraan"
+--> "Mengaktifkan pratinjau kamera"
+if "Kamera tersedia?" then
+  -->[ya] "Mengarahkan kamera ke kendaraan"
+  --> "Menekan tombol Ambil Gambar"
+  --> "Menampilkan foto hasil tangkapan"
+  --> (*)
+else
+  -->[tidak] "Menampilkan kotak gambar kosong"
+  --> (*)
+endif
+@enduml
+
+' == Activity: Mengunggah Gambar Kendaraan ==
+@startuml
+title Mengunggah Gambar Kendaraan
+(*) --> "Membuka halaman Deteksi Kendaraan"
+--> "Menekan tombol Upload Gambar"
+--> "Membuka galeri perangkat"
+if "Memilih gambar?" then
+  -->[ya] "Memilih foto kendaraan"
+  --> "Menampilkan foto terpilih pada pratinjau"
+  --> (*)
+else
+  -->[batal] "Kembali ke pratinjau kamera"
+  --> (*)
+endif
+@enduml
+
+' == Activity: Mendeteksi Kendaraan & Plat Nomor ==
+@startuml
+title Mendeteksi Kendaraan & Plat Nomor
+|Pengguna|
+(*) --> "Menekan tombol SUBMIT"
+|Sistem|
+--> "Menampilkan indikator proses"
+--> "Mengirim gambar ke API Deteksi YOLOv8"
+if "Deteksi berhasil?" then
+  -->[ya] "Menerima jenis kendaraan, plat nomor & confidence"
+  --> "Menyimpan hasil ke Riwayat Deteksi"
+  --> "Menampilkan halaman Hasil Deteksi"
+  --> (*)
+else
+  -->[gagal/timeout] "Menampilkan pesan kesalahan"
+  --> (*)
+endif
+@enduml
+
+' == Activity: Melihat Hasil Deteksi ==
+@startuml
+title Melihat Hasil Deteksi
+(*) --> "Membuka halaman Hasil Deteksi"
+--> "Menampilkan gambar kendaraan"
+--> "Menampilkan jenis kendaraan & nomor polisi"
+--> "Menampilkan tingkat confidence & tanggal deteksi"
+--> "Menekan tombol Kembali"
+--> "Membuka halaman Riwayat Deteksi"
+--> (*)
+@enduml
+
+' == Activity: Melihat Riwayat Deteksi ==
+@startuml
+title Melihat Riwayat Deteksi
+(*) --> "Membuka halaman Riwayat Deteksi"
+--> "Memuat data deteksi dari Firestore"
+if "Ada data deteksi?" then
+  -->[ya] "Menampilkan daftar kartu deteksi terbaru"
+  --> "Memilih salah satu kartu untuk melihat detail"
+  --> (*)
+else
+  -->[tidak] "Menampilkan pesan data kosong"
+  --> (*)
+endif
+@enduml
+
+' == Activity: Memfilter Riwayat Deteksi ==
+@startuml
+title Memfilter Riwayat Deteksi
+(*) --> "Membuka halaman Riwayat Deteksi"
+--> "Membuka dropdown kategori kendaraan"
+--> "Memilih kategori (Semua/Ambulance/Police/Fire Truck)"
+if "Ada data sesuai kategori?" then
+  -->[ya] "Menampilkan daftar deteksi terfilter"
+  --> (*)
+else
+  -->[tidak] "Menampilkan pesan 'Tidak ada data untuk kategori ini'"
+  --> (*)
+endif
+@enduml

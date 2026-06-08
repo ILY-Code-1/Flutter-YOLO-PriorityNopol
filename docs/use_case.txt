@@ -1,0 +1,35 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+actor "Pengguna" as User
+actor "API Deteksi\nYOLOv8" as API
+actor "Firebase\nFirestore" as DB
+
+rectangle "PrioScan — Priority Vehicle Scanner" {
+  usecase "Melihat Informasi Aplikasi" as UC1
+  usecase "Mengambil Gambar Kendaraan" as UC2
+  usecase "Mengunggah Gambar Kendaraan" as UC3
+  usecase "Mendeteksi Kendaraan & Plat Nomor" as UC4
+  usecase "Melihat Hasil Deteksi" as UC5
+  usecase "Melihat Riwayat Deteksi" as UC6
+  usecase "Memfilter Riwayat Deteksi" as UC7
+}
+
+User --> UC1
+User --> UC2
+User --> UC3
+User --> UC4
+User --> UC5
+User --> UC6
+User --> UC7
+
+UC4 ..> UC5 : <<include>>
+UC7 ..> UC6 : <<extend>>
+
+UC4 --> API
+UC4 --> DB
+UC6 --> DB
+
+@enduml

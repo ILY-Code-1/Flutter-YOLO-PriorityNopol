@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>White Box Testing — PrioScan</title>
+<style>
+  body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 32px; color: #1f2430; background: #f4f6fb; line-height: 1.55; }
+  h1 { color: #4a2fbd; border-bottom: 3px solid #4a2fbd; padding-bottom: 8px; }
+  h2 { color: #3b2a8c; margin-top: 40px; }
+  h3 { color: #2e7d32; }
+  .card { background: #fff; border-radius: 12px; padding: 24px; box-shadow: 0 2px 10px rgba(0,0,0,0.06); margin-bottom: 28px; }
+  .trace { font-family: 'Consolas', monospace; font-size: 13px; background:#ece7ff; color:#3b2a8c; padding:4px 10px; border-radius:6px; display:inline-block; }
+  table { border-collapse: collapse; width: 100%; margin-top: 12px; font-size: 13px; }
+  th, td { border: 1px solid #d9def0; padding: 8px 10px; text-align: left; vertical-align: top; }
+  th { background: #4a2fbd; color: #fff; }
+  tr:nth-child(even) td { background: #f7f8fe; }
+  pre { background: #1e1e2e; color: #d8dee9; display: block; padding: 14px; border-radius: 8px; overflow-x: auto; font-family: 'Consolas', monospace; font-size: 13px; white-space: pre; }
+  .cc { font-size:15px; font-weight:700; color:#c0392b; }
+</style>
+</head>
+<body>
+<h1>White Box Testing — PrioScan</h1>
+<p>Pengujian struktur internal terhadap fungsi-fungsi inti PrioScan menggunakan flowchart, flowgraph, perhitungan <em>cyclomatic complexity</em> (V(G)), dan basis path testing. Setiap diagram PlantUML berada di dalam tag <code>&lt;pre&gt;</code>.</p>
+
+<!-- ==================== FUNGSI 1 ==================== -->
+<div class="card">
+<h2>1. Fungsi <code>_formatPlateNumber(String raw)</code></h2>
+<p class="trace">Code traceability: lib/app/features/detection/controllers/detection_controller.dart : baris 95–108</p>
+
+<h3>Flowchart</h3>
+<pre>@startuml
+start
+:match = RegExp(huruf-angka-huruf).firstMatch(raw);
+if (match != null?) then (ya)
+  :suffix = group(3);
+  if (suffix kosong?) then (ya)
+    :return "g1 g2";
+  else (tidak)
+    :return "g1 g2 g3";
+  endif
+else (tidak)
+  if (raw.trim() kosong?) then (ya)
+    :return "-";
+  else (tidak)
+    :return raw.trim();
+  endif
+endif
+stop
+@enduml</pre>
+
+<h3>Flowgraph</h3>
+<pre>@startuml
+(1) as "1"
+(1) --> (2)
+(2) --> (3) : match!=null
+(2) --> (6) : match==null
+(3) --> (4) : suffix kosong
+(3) --> (5) : suffix ada
+(4) --> (9)
+(5) --> (9)
+(6) --> (7) : raw kosong
+(6) --> (8) : raw ada
+(7) --> (9)
+(8) --> (9)
+@enduml</pre>
+
+<h3>Cyclomatic Complexity</h3>
+<table>
+  <tr><th>Metode</th><th>Perhitungan</th><th>V(G)</th></tr>
+  <tr><td>Edge - Node + 2</td><td>11 - 9 + 2</td><td class="cc">4</td></tr>
+  <tr><td>Predikat (P) + 1</td><td>3 (match, suffix, raw) + 1</td><td class="cc">4</td></tr>
+  <tr><td>Region</td><td>4 region tertutup</td><td class="cc">4</td></tr>
+</table>
+
+<h3>Basis Path / Test Case</h3>
+<table>
+  <thead><tr><th>Path</th><th>Jalur Node</th><th>Data Uji</th><th>Hasil Diharapkan</th></tr></thead>
+  <tbody>
+    <tr><td>P1</td><td>1-2-3-4-9</td><td>"B1234"</td><td>"B 1234"</td></tr>
+    <tr><td>P2</td><td>1-2-3-5-9</td><td>"B1234XYZ"</td><td>"B 1234 XYZ"</td></tr>
+    <tr><td>P3</td><td>1-2-6-7-9</td><td>"" (kosong)</td><td>"-"</td></tr>
+    <tr><td>P4</td><td>1-2-6-8-9</td><td>"1234@@"</td><td>"1234@@" (apa adanya)</td></tr>
+  </tbody>
+</table>
+</div>
+
+<!-- ==================== FUNGSI 2 ==================== -->
+<div class="card">
+<h2>2. Fungsi <code>_ConfidenceBadge._label</code> (penentuan tingkat keyakinan)</h2>
+<p class="trace">Code traceability: lib/app/features/result/views/result_view.dart : baris 99–103</p>
+
+<h3>Flowchart</h3>
+<pre>@startuml
+start
+if (confidence > 0.80?) then (ya)
+  :label = "High";
+else (tidak)
+  if (confidence > 0.60?) then (ya)
+    :label = "Medium";
+  else (tidak)
+    :label = "Low";
+  endif
+endif
+stop
+@enduml</pre>
+
+<h3>Flowgraph</h3>
+<pre>@startuml
+(1) --> (2) : >0.80
+(1) --> (3) : <=0.80
+(3) --> (4) : >0.60
+(3) --> (5) : <=0.60
+(2) --> (6)
+(4) --> (6)
+(5) --> (6)
+@enduml</pre>
+
+<h3>Cyclomatic Complexity</h3>
+<table>
+  <tr><th>Metode</th><th>Perhitungan</th><th>V(G)</th></tr>
+  <tr><td>Edge - Node + 2</td><td>7 - 6 + 2</td><td class="cc">3</td></tr>
+  <tr><td>Predikat (P) + 1</td><td>2 + 1</td><td class="cc">3</td></tr>
+</table>
+
+<h3>Basis Path / Test Case</h3>
+<table>
+  <thead><tr><th>Path</th><th>Jalur Node</th><th>Data Uji (confidence)</th><th>Hasil Diharapkan</th></tr></thead>
+  <tbody>
+    <tr><td>P1</td><td>1-2-6</td><td>0.93</td><td>"High" (hijau, 93.0%)</td></tr>
+    <tr><td>P2</td><td>1-3-4-6</td><td>0.71</td><td>"Medium" (orange, 71.0%)</td></tr>
+    <tr><td>P3</td><td>1-3-5-6</td><td>0.45</td><td>"Low" (merah, 45.0%)</td></tr>
+  </tbody>
+</table>
+</div>
+
+<!-- ==================== FUNGSI 3 ==================== -->
+<div class="card">
+<h2>3. Fungsi <code>submit()</code> (deteksi & simpan)</h2>
+<p class="trace">Code traceability: lib/app/features/detection/controllers/detection_controller.dart : baris 111–228</p>
+
+<h3>Flowchart</h3>
+<pre>@startuml
+start
+if (capturedImagePath kosong?) then (ya)
+  :return (batal);
+  stop
+else (tidak)
+endif
+:isLoading = true; bangun MultipartRequest;
+if (path .png?) then (ya)
+  :mediaType = image/png;
+else (tidak)
+  if (path .jpg/.jpeg?) then (ya)
+    :mediaType = image/jpeg;
+  else (tidak)
+    :mediaType = image/jpeg (default);
+  endif
+endif
+:kirim request ke API YOLOv8;
+if (statusCode != 200?) then (ya)
+  :throw HttpException;
+  :tampilkan snackbar error;
+  stop
+else (tidak)
+  :parse JSON, format plat, encode base64;
+  :simpan DetectionRecord ke Firestore;
+  :navigasi ke ResultView;
+  stop
+endif
+@enduml</pre>
+
+<h3>Flowgraph</h3>
+<pre>@startuml
+(1) --> (2)
+(2) --> (E) : path kosong
+(2) --> (3) : ada gambar
+(3) --> (4) : .png
+(3) --> (5) : bukan .png
+(5) --> (6) : .jpg/.jpeg
+(5) --> (7) : selain itu
+(4) --> (8)
+(6) --> (8)
+(7) --> (8)
+(8) --> (9) : statusCode != 200
+(8) --> (10) : statusCode 200
+(9) --> (11) : SocketException
+(9) --> (12) : TimeoutException
+(9) --> (13) : exception lain
+(10) --> (E)
+(11) --> (E)
+(12) --> (E)
+(13) --> (E)
+@enduml</pre>
+
+<h3>Cyclomatic Complexity</h3>
+<table>
+  <tr><th>Metode</th><th>Perhitungan</th><th>V(G)</th></tr>
+  <tr><td>Predikat (P) + 1</td><td>6 (kosong, .png, .jpg, status!=200, Socket, Timeout) + 1</td><td class="cc">7</td></tr>
+</table>
+
+<h3>Basis Path / Test Case</h3>
+<table>
+  <thead><tr><th>Path</th><th>Skenario</th><th>Data Uji</th><th>Hasil Diharapkan</th></tr></thead>
+  <tbody>
+    <tr><td>P1</td><td>Gambar kosong</td><td>capturedImagePath = ""</td><td>Fungsi keluar tanpa aksi</td></tr>
+    <tr><td>P2</td><td>PNG sukses</td><td>foto.png + API 200</td><td>Tersimpan & pindah ke Hasil</td></tr>
+    <tr><td>P3</td><td>JPG sukses</td><td>foto.jpg + API 200</td><td>Tersimpan & pindah ke Hasil</td></tr>
+    <tr><td>P4</td><td>Ekstensi lain (default jpeg)</td><td>foto.webp + API 200</td><td>Tersimpan sebagai jpeg & pindah ke Hasil</td></tr>
+    <tr><td>P5</td><td>API gagal</td><td>statusCode 500</td><td>Snackbar "Terjadi kesalahan"</td></tr>
+    <tr><td>P6</td><td>Tanpa internet</td><td>koneksi mati</td><td>Snackbar "Tidak ada koneksi internet"</td></tr>
+    <tr><td>P7</td><td>Timeout</td><td>API &gt; 30 dtk</td><td>Snackbar "Koneksi timeout, coba lagi"</td></tr>
+  </tbody>
+</table>
+</div>
+
+</body>
+</html>

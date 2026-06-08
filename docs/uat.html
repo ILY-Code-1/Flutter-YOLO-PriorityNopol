@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>User Acceptance Testing (UAT) — PrioScan</title>
+<style>
+  body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 32px; color: #1f2430; background: #f4f6fb; line-height: 1.55; }
+  h1 { color: #4a2fbd; border-bottom: 3px solid #4a2fbd; padding-bottom: 8px; }
+  p.lead { color: #555; }
+  table { border-collapse: collapse; width: 100%; margin-top: 16px; font-size: 13px; }
+  th, td { border: 1px solid #d9def0; padding: 8px 10px; text-align: left; vertical-align: top; }
+  th { background: #4a2fbd; color: #fff; }
+  tr:nth-child(even) td { background: #f7f8fe; }
+  .pass { color: #1b8a3a; font-weight: 700; }
+</style>
+</head>
+<body>
+<h1>User Acceptance Testing (UAT) — PrioScan</h1>
+<p class="lead">Pengujian penerimaan dari sudut pandang pengguna akhir (Pengguna/Petugas) terhadap seluruh fitur utama PrioScan — Priority Vehicle Scanner. Role penguji sesuai aktor pada use case diagram: <strong>Pengguna</strong>.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>No</th><th>Skenario Pengujian</th><th>Role yang Menguji</th><th>Fitur yang Diuji</th>
+      <th>Langkah Pengujian</th><th>Ekspektasi Hasil</th><th>Status</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>1</td>
+      <td>Memahami fungsi aplikasi dari beranda</td>
+      <td>Pengguna</td>
+      <td>Melihat Informasi Aplikasi</td>
+      <td>Membuka aplikasi dan membaca deskripsi serta langkah "Cara Kerja"</td>
+      <td>Pengguna memahami bahwa aplikasi mendeteksi ambulans, pemadam, dan polisi serta membaca plat nomor</td>
+      <td class="pass">Pass</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>Memotret kendaraan prioritas dengan kamera</td>
+      <td>Pengguna</td>
+      <td>Mengambil Gambar Kendaraan</td>
+      <td>Tekan GET STARTED, arahkan kamera ke ambulans, tekan "Ambil Gambar"</td>
+      <td>Foto kendaraan tampil pada pratinjau dan siap diproses</td>
+      <td class="pass">Pass</td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td>Mengunggah foto kendaraan dari galeri</td>
+      <td>Pengguna</td>
+      <td>Mengunggah Gambar Kendaraan</td>
+      <td>Tekan "Upload Gambar", pilih foto mobil polisi dari galeri</td>
+      <td>Foto terpilih tampil pada pratinjau</td>
+      <td class="pass">Pass</td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td>Mendeteksi jenis kendaraan dan membaca plat nomor</td>
+      <td>Pengguna</td>
+      <td>Mendeteksi Kendaraan &amp; Plat Nomor</td>
+      <td>Setelah ada foto, tekan SUBMIT dan tunggu proses</td>
+      <td>Aplikasi menampilkan jenis kendaraan, nomor polisi, dan tingkat keyakinan dengan benar</td>
+      <td class="pass">Pass</td>
+    </tr>
+    <tr>
+      <td>5</td>
+      <td>Meninjau detail hasil deteksi</td>
+      <td>Pengguna</td>
+      <td>Melihat Hasil Deteksi</td>
+      <td>Pada halaman Hasil Deteksi, periksa gambar, jenis, plat, confidence, dan tanggal</td>
+      <td>Seluruh informasi hasil deteksi tampil jelas dan sesuai gambar</td>
+      <td class="pass">Pass</td>
+    </tr>
+    <tr>
+      <td>6</td>
+      <td>Menelusuri riwayat deteksi sebelumnya</td>
+      <td>Pengguna</td>
+      <td>Melihat Riwayat Deteksi</td>
+      <td>Geser ke bawah dari beranda / kembali dari hasil ke halaman Riwayat</td>
+      <td>Daftar deteksi terdahulu tampil terurut dari yang terbaru</td>
+      <td class="pass">Pass</td>
+    </tr>
+    <tr>
+      <td>7</td>
+      <td>Menyaring riwayat berdasarkan jenis kendaraan</td>
+      <td>Pengguna</td>
+      <td>Memfilter Riwayat Deteksi</td>
+      <td>Pada halaman Riwayat, pilih kategori "Ambulance" dari dropdown</td>
+      <td>Hanya riwayat ambulans yang ditampilkan</td>
+      <td class="pass">Pass</td>
+    </tr>
+  </tbody>
+</table>
+</body>
+</html>

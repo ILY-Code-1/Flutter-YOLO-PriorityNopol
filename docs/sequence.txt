@@ -1,0 +1,162 @@
+' == Sequence: Melihat Informasi Aplikasi ==
+@startuml
+title Melihat Informasi Aplikasi
+actor Pengguna
+participant "HomePage" as UI
+participant "MainController" as Ctrl
+
+Pengguna -> UI : membuka aplikasi
+activate UI
+UI -> Ctrl : memuat data beranda
+activate Ctrl
+Ctrl --> UI : info aplikasi & cara kerja
+deactivate Ctrl
+UI --> Pengguna : menampilkan beranda PrioScan
+deactivate UI
+@enduml
+
+' == Sequence: Mengambil Gambar Kendaraan ==
+@startuml
+title Mengambil Gambar Kendaraan
+actor Pengguna
+participant "DetectionView" as UI
+participant "DetectionController" as Ctrl
+participant "Kamera" as Cam
+
+Pengguna -> UI : membuka halaman Deteksi
+activate UI
+UI -> Ctrl : _initCamera()
+activate Ctrl
+Ctrl -> Cam : initialize()
+activate Cam
+Cam --> Ctrl : kamera siap
+deactivate Cam
+Ctrl --> UI : tampilkan pratinjau kamera
+deactivate Ctrl
+Pengguna -> UI : menekan Ambil Gambar
+UI -> Ctrl : capture()
+activate Ctrl
+Ctrl -> Cam : takePicture()
+activate Cam
+Cam --> Ctrl : file gambar
+deactivate Cam
+Ctrl --> UI : tampilkan foto hasil tangkapan
+deactivate Ctrl
+deactivate UI
+@enduml
+
+' == Sequence: Mengunggah Gambar Kendaraan ==
+@startuml
+title Mengunggah Gambar Kendaraan
+actor Pengguna
+participant "DetectionView" as UI
+participant "DetectionController" as Ctrl
+participant "Galeri" as Gallery
+
+Pengguna -> UI : menekan Upload Gambar
+activate UI
+UI -> Ctrl : pickFromGallery()
+activate Ctrl
+Ctrl -> Gallery : pickImage(gallery)
+activate Gallery
+Gallery --> Ctrl : file gambar terpilih
+deactivate Gallery
+opt gambar dipilih
+  Ctrl --> UI : tampilkan foto pada pratinjau
+end
+deactivate Ctrl
+UI --> Pengguna : menampilkan gambar siap submit
+deactivate UI
+@enduml
+
+' == Sequence: Mendeteksi Kendaraan & Plat Nomor ==
+@startuml
+title Mendeteksi Kendaraan & Plat Nomor
+actor Pengguna
+participant "DetectionController" as Ctrl
+participant "API YOLOv8" as API
+participant "Firestore" as DB
+
+Pengguna -> Ctrl : submit()
+activate Ctrl
+Ctrl -> API : POST gambar (multipart)
+activate API
+API --> Ctrl : vehicle, plate_number, confidence
+deactivate API
+alt deteksi berhasil
+  Ctrl -> DB : simpan DetectionRecord
+  activate DB
+  DB --> Ctrl : tersimpan
+  deactivate DB
+  Ctrl --> Pengguna : buka halaman Hasil Deteksi
+else gagal / timeout
+  Ctrl --> Pengguna : tampilkan pesan kesalahan
+end
+deactivate Ctrl
+@enduml
+
+' == Sequence: Melihat Hasil Deteksi ==
+@startuml
+title Melihat Hasil Deteksi
+actor Pengguna
+participant "ResultView" as UI
+participant "ResultController" as Ctrl
+
+Pengguna -> UI : membuka halaman Hasil
+activate UI
+UI -> Ctrl : ambil record deteksi
+activate Ctrl
+Ctrl --> UI : data jenis, plat, confidence, tanggal
+deactivate Ctrl
+UI --> Pengguna : menampilkan detail hasil deteksi
+Pengguna -> UI : menekan Kembali
+UI -> Ctrl : goToHistory()
+activate Ctrl
+Ctrl --> Pengguna : buka halaman Riwayat Deteksi
+deactivate Ctrl
+deactivate UI
+@enduml
+
+' == Sequence: Melihat Riwayat Deteksi ==
+@startuml
+title Melihat Riwayat Deteksi
+actor Pengguna
+participant "HistoryPage" as UI
+participant "MainController" as Ctrl
+participant "Firestore" as DB
+
+Pengguna -> UI : membuka halaman Riwayat
+activate UI
+UI -> Ctrl : _listenToRecords()
+activate Ctrl
+Ctrl -> DB : snapshots() orderBy detectedAt
+activate DB
+DB --> Ctrl : daftar dokumen deteksi
+deactivate DB
+Ctrl --> UI : records (real-time)
+deactivate Ctrl
+UI --> Pengguna : menampilkan daftar kartu deteksi
+deactivate UI
+@enduml
+
+' == Sequence: Memfilter Riwayat Deteksi ==
+@startuml
+title Memfilter Riwayat Deteksi
+actor Pengguna
+participant "HistoryPage" as UI
+participant "MainController" as Ctrl
+
+Pengguna -> UI : memilih kategori kendaraan
+activate UI
+UI -> Ctrl : setCategory(value)
+activate Ctrl
+Ctrl -> Ctrl : filteredRecords
+Ctrl --> UI : daftar deteksi terfilter
+deactivate Ctrl
+alt ada data
+  UI --> Pengguna : menampilkan daftar terfilter
+else kosong
+  UI --> Pengguna : pesan 'Tidak ada data untuk kategori ini'
+end
+deactivate UI
+@enduml

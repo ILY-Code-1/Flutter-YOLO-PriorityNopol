@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Desain Basis Data Relasional (ERD → LRS) — PrioScan</title>
+<style>
+  body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 32px; color: #1f2430; background: #f4f6fb; line-height: 1.6; }
+  h1 { color: #4a2fbd; border-bottom: 3px solid #4a2fbd; padding-bottom: 8px; }
+  h2 { color: #3b2a8c; margin-top: 40px; }
+  h3 { color: #2e7d32; margin-top: 26px; }
+  .card { background: #fff; border-radius: 12px; padding: 24px; box-shadow: 0 2px 10px rgba(0,0,0,0.06); margin-bottom: 24px; }
+  table { border-collapse: collapse; width: 100%; margin-top: 12px; font-size: 13.5px; }
+  th, td { border: 1px solid #d9def0; padding: 8px 11px; text-align: left; vertical-align: top; }
+  th { background: #4a2fbd; color: #fff; }
+  tr:nth-child(even) td { background: #f7f8fe; }
+  pre.plantuml { background: #1e1e2e; color: #d8dee9; display: block; padding: 16px; border-radius: 8px; overflow-x: auto; font-family: 'Consolas', monospace; font-size: 13px; white-space: pre; }
+  .pk { color: #c0392b; font-weight: 700; }
+  .fk { color: #b9770e; font-weight: 700; }
+</style>
+</head>
+<body>
+<h1>Desain Basis Data Relasional (ERD → LRS) — PrioScan</h1>
+<p><em>PrioScan — Priority Vehicle Scanner using YOLOv8.</em> Dokumen ini memodelkan ulang data deteksi kendaraan prioritas ke dalam skema relasional ternormalisasi, sebagai padanan konseptual dari penyimpanan Firestore. Catatan deteksi Firestore dinormalisasi menjadi tiga entitas: <strong>VehicleType</strong>, <strong>Detection</strong>, dan <strong>DetectionImage</strong>.</p>
+<p><strong>Catatan render:</strong> seluruh kode PlantUML berada di dalam tag <code>&lt;pre class='plantuml'&gt;</code> agar dapat di-render manual (mis. melalui plantuml.com atau ekstensi PlantUML).</p>
+
+<!-- ===================== SECTION 1: ERD ===================== -->
+<div class="card">
+<h2>1. Entity Relationship Diagram (ERD)</h2>
+<p>Terdapat tiga entitas utama:</p>
+<ul>
+  <li><strong>VehicleType</strong> — master jenis kendaraan prioritas (Ambulance, Police, Fire Truck). Satu jenis kendaraan dapat muncul pada banyak deteksi.</li>
+  <li><strong>Detection</strong> — catatan satu peristiwa deteksi (nomor polisi, waktu, confidence). Mereferensi satu VehicleType.</li>
+  <li><strong>DetectionImage</strong> — gambar base64 dari sebuah deteksi, dipisah dari Detection karena ukurannya besar. Berelasi satu-ke-satu dengan Detection.</li>
+</ul>
+<p><strong>Relasi:</strong> <em>VehicleType</em> 1 — N <em>Detection</em> (satu jenis dimiliki banyak deteksi); <em>Detection</em> 1 — 1 <em>DetectionImage</em> (setiap deteksi memiliki tepat satu gambar). Tidak terdapat relasi many-to-many pada domain ini.</p>
+<pre class="plantuml">@startuml
+hide circle
+skinparam linetype ortho
+
+entity "VehicleType" as VT {
+  *vehicle_type_id : INT &lt;&lt;PK&gt;&gt;
+  --
+  +code : VARCHAR(20) &lt;&lt;NN&gt;&gt;
+  +name : VARCHAR(30) &lt;&lt;NN&gt;&gt;
+}
+
+entity "Detection" as DET {
+  *detection_id : BIGINT &lt;&lt;PK&gt;&gt;
+  --
+  +vehicle_type_id : INT &lt;&lt;FK&gt;&gt; &lt;&lt;NN&gt;&gt;
+  +plate_number : VARCHAR(15) &lt;&lt;NN&gt;&gt;
+  +detected_at : DATETIME &lt;&lt;NN&gt;&gt;
+  +confidence : DECIMAL(4,3) &lt;&lt;NN&gt;&gt;
+}
+
+entity "DetectionImage" as IMG {
+  *detection_id : BIGINT &lt;&lt;PK&gt;&gt; &lt;&lt;FK&gt;&gt;
+  --
+  +image_base64 : LONGTEXT &lt;&lt;NN&gt;&gt;
+  +mime_type : VARCHAR(20) &lt;&lt;NN&gt;&gt;
+}
+
+VT ||--o{ DET : "memiliki / mengklasifikasikan"
+DET ||--|| IMG : "memuat"
+@enduml</pre>
+</div>
+
+<!-- ============= SECTION 2: TRANSFORMASI ERD -> LRS ============= -->
+<div class="card">
+<h2>2. Transformasi ERD ke LRS (Logical Record Structure)</h2>
+<p>Berikut keputusan transformasi tiap relasi dari ERD menjadi struktur tabel logis:</p>
+<ul>
+  <li><strong>Relasi 1—N (VehicleType → Detection):</strong> Foreign Key diletakkan pada sisi <em>many</em>, yaitu kolom <span class="fk">vehicle_type_id</span> ditambahkan ke tabel <strong>Detection</strong> yang mereferensi <code>VehicleType.vehicle_type_id</code>.</li>
+  <li><strong>Relasi 1—1 (Detection → DetectionImage):</strong> Karena <strong>DetectionImage</strong> memiliki partisipasi total terhadap Detection (gambar tidak ada tanpa deteksi), FK ditempatkan pada sisi DetectionImage. PK tabel <strong>DetectionImage</strong> sekaligus menjadi FK ke <code>Detection.detection_id</code> (shared primary key), sehingga relasi 1—1 terjamin.</li>
+  <li><strong>Relasi Many-to-Many:</strong> tidak ada pada domain ini, sehingga tidak ada tabel junction yang dibuat.</li>
+  <li><strong>Atribut multivalue / weak entity:</strong> tidak ada; seluruh atribut bernilai tunggal.</li>
+</ul>
+<p>Hasil transformasi menghasilkan tiga tabel: <code>vehicle_type</code>, <code>detection</code>, dan <code>detection_image</code>.</p>
+<pre class="plantuml">@startuml
+class "vehicle_type" &lt;&lt;Table&gt;&gt; {
+  + PK vehicle_type_id : INT
+  - code : VARCHAR(20)
+  - name : VARCHAR(30)
+}
+
+class "detection" &lt;&lt;Table&gt;&gt; {
+  + PK detection_id : BIGINT
+  # FK vehicle_type_id : INT  -- ref vehicle_type
+  - plate_number : VARCHAR(15)
+  - detected_at : DATETIME
+  - confidence : DECIMAL(4,3)
+}
+
+class "detection_image" &lt;&lt;Table&gt;&gt; {
+  + PK detection_id : BIGINT  -- shared key (1:1)
+  # FK detection_id : BIGINT  -- ref detection
+  - image_base64 : LONGTEXT
+  - mime_type : VARCHAR(20)
+}
+
+"vehicle_type" --> "detection" : 1 .. N (FK vehicle_type_id)
+"detection" --> "detection_image" : 1 .. 1 (FK detection_id)
+@enduml</pre>
+</div>
+
+<!-- ===================== SECTION 3: LRS FINAL ===================== -->
+<div class="card">
+<h2>3. Logical Record Structure (LRS) — Final</h2>
+<p>Struktur logis final setelah transformasi, bersih tanpa anotasi proses:</p>
+<pre class="plantuml">@startuml
+class "vehicle_type" &lt;&lt;Table&gt;&gt; {
+  + PK vehicle_type_id : INT
+  - code : VARCHAR(20)
+  - name : VARCHAR(30)
+}
+
+class "detection" &lt;&lt;Table&gt;&gt; {
+  + PK detection_id : BIGINT
+  # FK vehicle_type_id : INT
+  - plate_number : VARCHAR(15)
+  - detected_at : DATETIME
+  - confidence : DECIMAL(4,3)
+}
+
+class "detection_image" &lt;&lt;Table&gt;&gt; {
+  + PK FK detection_id : BIGINT
+  - image_base64 : LONGTEXT
+  - mime_type : VARCHAR(20)
+}
+
+"vehicle_type" "1" --> "0..*" "detection"
+"detection" "1" --> "1" "detection_image"
+@enduml</pre>
+</div>
+
+<!-- ============= SECTION 4: SPESIFIKASI BASIS DATA ============= -->
+<div class="card">
+<h2>4. Spesifikasi Basis Data</h2>
+
+<h3>Tabel: vehicle_type</h3>
+<table>
+  <thead><tr><th>No</th><th>Nama Field</th><th>Tipe Data</th><th>Ukuran/Presisi</th><th>PK</th><th>FK (ref)</th><th>Null</th><th>Default</th><th>Deskripsi</th></tr></thead>
+  <tbody>
+    <tr><td>1</td><td class="pk">vehicle_type_id</td><td>INT</td><td>—</td><td>✔</td><td>—</td><td>NOT NULL</td><td>AUTO_INCREMENT</td><td>Identitas unik jenis kendaraan prioritas.</td></tr>
+    <tr><td>2</td><td>code</td><td>VARCHAR</td><td>20</td><td>—</td><td>—</td><td>NOT NULL</td><td>—</td><td>Kode internal model: ambulance, police, fire_truck.</td></tr>
+    <tr><td>3</td><td>name</td><td>VARCHAR</td><td>30</td><td>—</td><td>—</td><td>NOT NULL</td><td>—</td><td>Nama tampilan: Ambulance, Police, Fire Truck.</td></tr>
+  </tbody>
+</table>
+
+<h3>Tabel: detection</h3>
+<table>
+  <thead><tr><th>No</th><th>Nama Field</th><th>Tipe Data</th><th>Ukuran/Presisi</th><th>PK</th><th>FK (ref)</th><th>Null</th><th>Default</th><th>Deskripsi</th></tr></thead>
+  <tbody>
+    <tr><td>1</td><td class="pk">detection_id</td><td>BIGINT</td><td>—</td><td>✔</td><td>—</td><td>NOT NULL</td><td>—</td><td>Identitas deteksi = epoch milidetik saat deteksi.</td></tr>
+    <tr><td>2</td><td class="fk">vehicle_type_id</td><td>INT</td><td>—</td><td>—</td><td>vehicle_type.vehicle_type_id</td><td>NOT NULL</td><td>—</td><td>Jenis kendaraan hasil klasifikasi YOLOv8.</td></tr>
+    <tr><td>3</td><td>plate_number</td><td>VARCHAR</td><td>15</td><td>—</td><td>—</td><td>NOT NULL</td><td>'-'</td><td>Nomor polisi hasil EasyOCR, terformat "B 1234 XYZ".</td></tr>
+    <tr><td>4</td><td>detected_at</td><td>DATETIME</td><td>—</td><td>—</td><td>—</td><td>NOT NULL</td><td>CURRENT_TIMESTAMP</td><td>Waktu deteksi; dasar pengurutan riwayat.</td></tr>
+    <tr><td>5</td><td>confidence</td><td>DECIMAL</td><td>4,3</td><td>—</td><td>—</td><td>NOT NULL</td><td>0.000</td><td>Keyakinan model 0.000–1.000 (High/Medium/Low).</td></tr>
+  </tbody>
+</table>
+
+<h3>Tabel: detection_image</h3>
+<table>
+  <thead><tr><th>No</th><th>Nama Field</th><th>Tipe Data</th><th>Ukuran/Presisi</th><th>PK</th><th>FK (ref)</th><th>Null</th><th>Default</th><th>Deskripsi</th></tr></thead>
+  <tbody>
+    <tr><td>1</td><td class="pk">detection_id</td><td>BIGINT</td><td>—</td><td>✔</td><td>detection.detection_id</td><td>NOT NULL</td><td>—</td><td>PK sekaligus FK (relasi 1:1 dengan detection).</td></tr>
+    <tr><td>2</td><td>image_base64</td><td>LONGTEXT</td><td>—</td><td>—</td><td>—</td><td>NOT NULL</td><td>—</td><td>Gambar kendaraan sebagai data URI base64.</td></tr>
+    <tr><td>3</td><td>mime_type</td><td>VARCHAR</td><td>20</td><td>—</td><td>—</td><td>NOT NULL</td><td>'image/jpeg'</td><td>Tipe MIME gambar (image/jpeg atau image/png).</td></tr>
+  </tbody>
+</table>
+</div>
+
+</body>
+</html>

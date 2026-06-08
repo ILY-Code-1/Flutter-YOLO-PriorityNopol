@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Desain Basis Data Firestore — PrioScan</title>
+<style>
+  body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 32px; color: #1f2430; background: #f4f6fb; line-height: 1.6; }
+  h1 { color: #4a2fbd; border-bottom: 3px solid #4a2fbd; padding-bottom: 8px; }
+  h2 { color: #3b2a8c; margin-top: 40px; }
+  .card { background: #fff; border-radius: 12px; padding: 24px; box-shadow: 0 2px 10px rgba(0,0,0,0.06); margin-bottom: 24px; }
+  table { border-collapse: collapse; width: 100%; margin-top: 12px; font-size: 14px; }
+  th, td { border: 1px solid #d9def0; padding: 9px 12px; text-align: left; vertical-align: top; }
+  th { background: #4a2fbd; color: #fff; }
+  tr:nth-child(even) td { background: #f7f8fe; }
+  ul.tree { list-style: none; font-family: 'Consolas', monospace; font-size: 14px; }
+  ul.tree li { margin: 4px 0; padding-left: 18px; border-left: 1px dashed #b9c0e0; }
+  .col { color: #c0392b; }
+  .type { color: #2e7d32; font-weight: 600; }
+  code, pre.plantuml { background: #1e1e2e; color: #d8dee9; display: block; padding: 16px; border-radius: 8px; overflow-x: auto; font-family: 'Consolas', monospace; font-size: 13px; white-space: pre; }
+  .badge { display:inline-block; background:#ece7ff; color:#4a2fbd; border-radius:6px; padding:1px 8px; font-size:12px; font-weight:600; }
+</style>
+</head>
+<body>
+<h1>Desain Basis Data NoSQL (Firebase Firestore) — PrioScan</h1>
+<p><em>PrioScan — Priority Vehicle Scanner using YOLOv8.</em> Dokumen ini menjelaskan struktur penyimpanan data deteksi kendaraan prioritas (Ambulance, Police, Fire Truck) beserta hasil pembacaan plat nomornya pada Cloud Firestore.</p>
+
+<div class="card">
+<h2>1. Desain Model NoSQL</h2>
+<p>Aplikasi PrioScan menerapkan strategi pemodelan <strong>flat collection dengan pendekatan Embedding (denormalisasi)</strong>. Seluruh data satu kali deteksi disimpan utuh dalam satu dokumen pada koleksi <span class="badge">vehicle_detection</span> — tanpa sub-koleksi maupun referensi antar dokumen.</p>
+<p><strong>Alasan pemilihan strategi:</strong></p>
+<ul>
+  <li><strong>Akses baca tunggal.</strong> Halaman <em>Riwayat Deteksi</em> (HistoryPage) maupun <em>Hasil Deteksi</em> (ResultView) selalu menampilkan seluruh atribut satu deteksi sekaligus (jenis kendaraan, nomor polisi, gambar, confidence, tanggal). Embedding membuat satu kali baca dokumen sudah cukup, tanpa <em>join</em> ataupun <em>lookup</em> tambahan.</li>
+  <li><strong>Tidak ada relasi kompleks.</strong> Domain aplikasi hanya memiliki satu jenis entitas inti (catatan deteksi). Jenis kendaraan hanya berupa nilai enumerasi tetap (<code>Ambulance</code>, <code>Police</code>, <code>Fire Truck</code>), sehingga tidak perlu koleksi master terpisah.</li>
+  <li><strong>Real-time stream.</strong> MainController menggunakan <code>.snapshots()</code> dengan <code>orderBy('detectedAt', descending: true)</code>. Struktur flat memudahkan pengurutan dan filter kategori di sisi klien.</li>
+  <li><strong>Gambar tertanam.</strong> Field <code>imageBase64</code> menyimpan gambar dalam bentuk data URI base64 langsung di dokumen, sehingga riwayat tetap dapat menampilkan foto tanpa memerlukan pengambilan berkas terpisah.</li>
+</ul>
+<p><strong>Contoh konkret:</strong> ketika pengguna menekan SUBMIT, <code>DetectionController.submit()</code> membuat satu dokumen dengan ID = <code>DateTime.now().millisecondsSinceEpoch</code> (mis. <code>"1733740800000"</code>) di koleksi <code>vehicle_detection</code>.</p>
+</div>
+
+<div class="card">
+<h2>2. Struktur Koleksi</h2>
+<ul class="tree">
+  <li>📁 <strong>vehicle_detection</strong> <em>(koleksi root)</em>
+    <ul class="tree">
+      <li>📄 <strong>{detectionId}</strong> &nbsp;— contoh ID: <code>"1733740800000"</code> (epoch milidetik)
+        <ul class="tree">
+          <li><span class="col">vehicleType</span> : <span class="type">string</span> &nbsp;→ "Ambulance"</li>
+          <li><span class="col">plateNumber</span> : <span class="type">string</span> &nbsp;→ "B 1234 XYZ"</li>
+          <li><span class="col">imageBase64</span> : <span class="type">string</span> &nbsp;→ "data:image/jpeg;base64,/9j/4AAQ..."</li>
+          <li><span class="col">detectedAt</span> : <span class="type">timestamp</span> &nbsp;→ 9 Jun 2026, 10:00</li>
+          <li><span class="col">confidence</span> : <span class="type">number</span> &nbsp;→ 0.93</li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+</ul>
+<p>Tidak terdapat sub-koleksi maupun referensi ID antar dokumen. Setiap dokumen berdiri sendiri (self-contained) dan mewakili satu peristiwa deteksi.</p>
+</div>
+
+<div class="card">
+<h2>3. Struktur Logis (Object Diagram)</h2>
+<p>Diagram objek berikut menggambarkan tiga contoh dokumen nyata pada koleksi <code>vehicle_detection</code>.</p>
+<pre class="plantuml">@startuml
+object "doc:1733740800000" as d1 {
+  vehicleType = "Ambulance"
+  plateNumber = "B 1234 XYZ"
+  imageBase64 = "data:image/jpeg;base64,/9j/4AAQ..."
+  detectedAt = 2026-06-09T10:00:00
+  confidence = 0.93
+}
+
+object "doc:1733744400000" as d2 {
+  vehicleType = "Police"
+  plateNumber = "D 5678 PK"
+  imageBase64 = "data:image/jpeg;base64,/9j/2wCEAAk..."
+  detectedAt = 2026-06-09T11:00:00
+  confidence = 0.71
+}
+
+object "doc:1733748000000" as d3 {
+  vehicleType = "Fire Truck"
+  plateNumber = "F 9012 PMK"
+  imageBase64 = "data:image/jpeg;base64,/9j/4QDKR..."
+  detectedAt = 2026-06-09T12:00:00
+  confidence = 0.55
+}
+
+object "collection: vehicle_detection" as col
+
+col -- d1
+col -- d2
+col -- d3
+@enduml</pre>
+<p>Catatan: ketiga objek terhubung ke node koleksi yang sama. Karena model NoSQL ini denormalisasi, tidak ada link referensi antar dokumen — setiap dokumen menyimpan jenis kendaraan sebagai nilai string langsung.</p>
+</div>
+
+<div class="card">
+<h2>4. Spesifikasi Basis Data</h2>
+<table>
+  <thead>
+    <tr><th>No</th><th>Nama Field</th><th>Tipe Data</th><th>Koleksi</th><th>Deskripsi</th><th>Constraint / Index</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>1</td><td>(Document ID)</td><td>string</td><td>vehicle_detection</td>
+      <td>ID dokumen = epoch milidetik saat deteksi (<code>millisecondsSinceEpoch</code>). Berfungsi sebagai identitas unik catatan deteksi.</td>
+      <td>Primary identifier, unique, required</td>
+    </tr>
+    <tr>
+      <td>2</td><td>vehicleType</td><td>string</td><td>vehicle_detection</td>
+      <td>Jenis kendaraan prioritas hasil klasifikasi YOLOv8: "Ambulance", "Police", "Fire Truck", atau "Unknown".</td>
+      <td>required, indexed (filter kategori)</td>
+    </tr>
+    <tr>
+      <td>3</td><td>plateNumber</td><td>string</td><td>vehicle_detection</td>
+      <td>Nomor polisi hasil pembacaan EasyOCR, sudah diformat "B 1234 XYZ". Bernilai "-" bila tidak terbaca.</td>
+      <td>required</td>
+    </tr>
+    <tr>
+      <td>4</td><td>imageBase64</td><td>string</td><td>vehicle_detection</td>
+      <td>Gambar kendaraan dalam bentuk data URI base64 (mis. diawali <code>data:image/jpeg;base64,</code>) yang ditangkap/diunggah pengguna.</td>
+      <td>required</td>
+    </tr>
+    <tr>
+      <td>5</td><td>detectedAt</td><td>timestamp</td><td>vehicle_detection</td>
+      <td>Waktu deteksi dilakukan. Digunakan untuk mengurutkan riwayat dari terbaru ke terlama.</td>
+      <td>required, indexed (orderBy descending)</td>
+    </tr>
+    <tr>
+      <td>6</td><td>confidence</td><td>number</td><td>vehicle_detection</td>
+      <td>Tingkat keyakinan model YOLOv8 (0.0–1.0). Ditampilkan sebagai persentase dan label High/Medium/Low pada ResultView.</td>
+      <td>required, range 0.0–1.0</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+</body>
+</html>

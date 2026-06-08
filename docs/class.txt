@@ -1,0 +1,36 @@
+@startuml
+hide circle
+skinparam classAttributeIconSize 0
+
+class DetectionRecord {
+  - id : String
+  - plateNumber : String
+  - imageData : String
+  - detectedAt : DateTime
+  - confidence : double
+  + isAsset() : bool
+  + formattedDate() : String
+}
+
+enum VehicleType {
+  Ambulance
+  Police
+  FireTruck
+}
+
+enum ConfidenceLevel {
+  High
+  Medium
+  Low
+}
+
+class DetectionHistory {
+  - selectedCategory : String
+  + filteredRecords() : List<DetectionRecord>
+}
+
+DetectionHistory o-- "0..*" DetectionRecord : memuat
+DetectionRecord "1..*" --> "1" VehicleType : berjenis
+DetectionRecord "1" ..> "1" ConfidenceLevel : menentukan
+
+@enduml
